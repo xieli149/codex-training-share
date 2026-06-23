@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3小时，用 Codex 做出你的第一个 AI 工作小工具</title>
+  <style>
+    :root {
+      --ink: #062733;
+      --muted: #5b6b6d;
+      --deep: #075247;
+      --teal: #0c8d7d;
+      --teal-soft: #dff5ee;
+      --mint: #bff1dd;
+      --cream: #fff9e9;
+      --paper: #fffdf6;
+      --line: #b7ded4;
+      --gold: #f6c95d;
+      --danger: #9b3b2f;
+      --shadow: 0 18px 44px rgba(6, 39, 51, 0.12);
+      --radius: 8px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--sans);
+      background:
+        linear-gradient(90deg, rgba(12, 141, 125, 0.04) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(12, 141, 125, 0.04) 1px, transparent 1px),
+        var(--cream);
+      background-size: 32px 32px;
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 284px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px 18px;
+      border-right: 3px solid var(--deep);
+      background: rgba(255, 253, 246, 0.94);
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 14px;
+      border: 2px solid var(--deep);
+      border-radius: var(--radius);
+      background: var(--teal-soft);
+      box-shadow: 5px 5px 0 var(--deep);
+    }
+
+    .brand small {
+      font-weight: 800;
+      color: var(--teal);
+      letter-spacing: 0;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .toc-title {
+      margin: 16px 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    nav a {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 8px;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 9px;
+      border-radius: 7px;
+      color: #173c42;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    nav a:hover {
+      background: var(--teal-soft);
+    }
+
+    .nav-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 24px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: #ffffff;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    main {
+      width: min(1120px, calc(100vw - 284px));
+      padding: 28px 36px 80px;
+    }
+
+    section {
+      scroll-margin-top: 24px;
+      margin: 0 0 28px;
+      padding: 30px;
+      border: 2px solid rgba(7, 82, 71, 0.2);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 246, 0.96);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 560px;
+      display: grid;
+      align-items: center;
+      overflow: hidden;
+      border: 4px solid var(--deep);
+      background:
+        linear-gradient(110deg, rgba(12, 141, 125, 0.14), rgba(255, 249, 233, 0.7) 48%, rgba(191, 241, 221, 0.45)),
+        var(--paper);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 2px solid var(--deep);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .tag {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 2px solid var(--deep);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--teal);
+      font-weight: 900;
+      box-shadow: 4px 4px 0 var(--deep);
+    }
+
+    .hero h1 {
+      margin: 22px 0 14px;
+      font-size: clamp(44px, 7vw, 86px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .hero h1 .accent {
+      color: var(--teal);
+    }
+
+    .hero p {
+      max-width: 720px;
+      margin: 0;
+      color: #163a40;
+      font-size: 23px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .hero-board {
+      border: 3px solid var(--deep);
+      border-radius: var(--radius);
+      background: #063b35;
+      color: #e5fff6;
+      box-shadow: 10px 10px 0 rgba(7, 82, 71, 0.22);
+      padding: 22px;
+    }
+
+    .hero-board .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(229, 255, 246, 0.22);
+      font-family: var(--mono);
+      font-size: 15px;
+    }
+
+    .hero-board .line:last-child {
+      border-bottom: none;
+    }
+
+    .meta-strip {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .hero .meta-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 620px;
+    }
+
+    .meta-item {
+      min-height: 70px;
+      padding: 12px;
+      border: 2px solid var(--deep);
+      border-radius: 7px;
+      background: #ffffff;
+      font-weight: 800;
+    }
+
+    .meta-item small {
+      display: block;
+      color: var(--teal);
+      font-size: 12px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 23px;
+      line-height: 1.25;
+    }
+
+    p {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    .lead {
+      color: #1a454b;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .panel,
+    .step,
+    .tool-card {
+      padding: 18px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .panel strong,
+    .step strong,
+    .tool-card strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .panel small,
+    .step small,
+    .tool-card small {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .time-row .time {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--deep);
+      border-radius: var(--radius);
+      background: var(--teal-soft);
+      color: var(--deep);
+      font-family: var(--mono);
+      font-weight: 900;
+    }
+
+    .time-row .content {
+      padding: 14px 16px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .time-row .content b {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 18px;
+    }
+
+    .note {
+      padding: 14px 16px;
+      border-left: 5px solid var(--teal);
+      background: var(--teal-soft);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-weight: 800;
+    }
+
+    .warning {
+      border-left-color: var(--danger);
+      background: #fff1ec;
+      color: #542019;
+    }
+
+    .qr-wrap {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .qr-box {
+      padding: 16px;
+      border: 3px solid var(--deep);
+      border-radius: var(--radius);
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .qr-box img {
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+      border-radius: 8px;
+    }
+
+    .copy-block {
+      margin: 16px 0;
+      border: 2px solid var(--deep);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #052e2a;
+    }
+
+    .copy-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e8fff8;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .copy-button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 2px solid #e8fff8;
+      border-radius: 6px;
+      background: transparent;
+      color: #e8fff8;
+      font: 800 13px var(--sans);
+      cursor: pointer;
+    }
+
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      color: #d9fff5;
+      font: 15px/1.65 var(--mono);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      min-height: 32px;
+      align-items: center;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      color: #204c52;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+      font-size: 16px;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      margin-bottom: 12px;
+      padding: 5px 10px;
+      border: 2px solid var(--deep);
+      border-radius: 6px;
+      background: var(--mint);
+      color: var(--deep);
+      font-weight: 900;
+      box-shadow: 3px 3px 0 var(--deep);
+    }
+
+    .demo-path {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .demo-path span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      padding: 8px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      text-align: center;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .source-pages {
+      display: grid;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .source-page {
+      padding: 20px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .source-page h3 {
+      margin-top: 0;
+    }
+
+    .source-page p {
+      color: #22474c;
+    }
+
+    .source-page .compact-list {
+      margin-top: 8px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        display: block;
+      }
+
+      aside {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 3px solid var(--deep);
+      }
+
+      main {
+        width: 100%;
+        padding: 20px 16px 60px;
+      }
+
+      .hero-grid,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .qr-wrap,
+      .meta-strip,
+      .demo-path {
+        grid-template-columns: 1fr;
+      }
+
+      .time-row {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 22px;
+      }
+    }
+
+    @media print {
+      aside {
+        display: none;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      main {
+        width: 100%;
+      }
+
+      section {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+
+      .copy-button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <small>Codex 线下实战分享</small>
+        <strong>目录导航</strong>
+      </div>
+      <nav aria-label="页面目录">
+        <a href="#home"><span class="nav-index">01</span><span>首页主题</span></a>
+        <a href="#signin"><span class="nav-index">02</span><span>签到二维码</span></a>
+        <a href="#agenda"><span class="nav-index">03</span><span>3小时流程</span></a>
+        <a href="#mindset"><span class="nav-index">04</span><span>认知铺垫</span></a>
+        <a href="#pet"><span class="nav-index">05</span><span>Codex 宠物</span></a>
+        <a href="#browser"><span class="nav-index">06</span><span>浏览器操作</span></a>
+        <a href="#lark"><span class="nav-index">07</span><span>飞书 CLI</span></a>
+        <a href="#office"><span class="nav-index">08</span><span>办公场景</span></a>
+        <a href="#web-desktop"><span class="nav-index">09</span><span>网页端与桌面版</span></a>
+        <a href="#tools"><span class="nav-index">10</span><span>小工具题库</span></a>
+        <a href="#workshop"><span class="nav-index">11</span><span>集中实操</span></a>
+        <a href="#wrap"><span class="nav-index">12</span><span>总结收尾</span></a>
+      </nav>
+    </aside>
+
+    <main>
+      <section id="home" class="hero">
+        <div class="hero-grid">
+          <div>
+            <span class="tag">Codex 开工</span>
+            <h1><span class="accent">3小时</span>，用 Codex 做出你的第一个 AI 工作小工具</h1>
+            <p>从宠物、浏览器、飞书资料库，到每个人现场做出一个能用的小工具。</p>
+            <div class="meta-strip">
+              <div class="meta-item"><small>目标</small>不是听懂功能，是做出结果</div>
+              <div class="meta-item"><small>方式</small>案例分享 + 集中实操</div>
+              <div class="meta-item"><small>主线</small>让 Codex 进入真实工作流</div>
+              <div class="meta-item"><small>产出</small>每人一个自己的工具</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="signin">
+        <span class="section-kicker">签到页</span>
+        <div class="qr-wrap">
+          <div>
+            <h2>请先扫码签到</h2>
+            <p class="lead">可截图本页，在微信中扫码识别。签到后，我们一起进入今天的 Codex 实战分享。</p>
+          </div>
+          <div class="qr-box">
+            <img src="assets/signin-qr.png" alt="线下活动签到二维码" />
+          </div>
+        </div>
+      </section>
+
+      <section id="agenda">
+        <span class="section-kicker">流程总览</span>
+        <h2>小工具制作放到最后，集中做</h2>
+        <p class="lead">先互相认识，再了解 Codex 的基础能力，最后把自己的想法做成一个能打开的小工具。</p>
+        <div class="timeline">
+          <div class="time-row">
+            <div class="time">0-30</div>
+            <div class="content"><b>个人自我介绍</b>用一句话介绍自己：1-2 个让大家记住你的标签，以及你想用 AI 做什么，或者你对 AI 的了解和期待。</div>
+          </div>
+          <div class="time-row">
+            <div class="time">30-90</div>
+            <div class="content"><b>Codex 基础入门分享</b>了解宠物、浏览器操作、飞书 CLI、网页端和桌面版的选择，以及这些能力在工作里怎么用。</div>
+          </div>
+          <div class="time-row">
+            <div class="time">90-120</div>
+            <div class="content"><b>思考 + 讨论：我想做什么小工具</b>从自己的工作、生活、学习里找一个小痛点，想清楚输入、输出和使用场景。</div>
+          </div>
+          <div class="time-row">
+            <div class="time">120-180</div>
+            <div class="content"><b>自己搭建小工具</b>把刚才想好的小点交给 Codex，一步步做成可以打开、可以试用、后续还能继续优化的 HTML 小工具。</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mindset">
+        <span class="section-kicker">认知铺垫</span>
+        <h2>先让大家明白：Codex 是工作代理，不只是聊天框</h2>
+        <div class="grid-3">
+          <div class="panel">
+            <strong>它能看资料</strong>
+            <small>截图、文档、表格、网页、本地文件、飞书内容都可以成为上下文。</small>
+          </div>
+          <div class="panel">
+            <strong>它能动手做</strong>
+            <small>生成文件、改代码、跑命令、预览页面、检查结果。</small>
+          </div>
+          <div class="panel">
+            <strong>它能沉淀流程</strong>
+            <small>把常用动作变成 skill、插件、自动化或自己的小工具。</small>
+          </div>
+        </div>
+        <div class="source-pages">
+          <div class="source-page">
+            <h3>今年，生财有术有一个很大的转变</h3>
+            <p>过去九年，我们的核心是“找项目、做项目”。第十年的主题是：用好 AI，跟上时代。</p>
+            <p>副题叫“仅靠想法致富的时代来了，前提是用好 AI”。随着 AI 编程和 Agent 的能力越来越强，未来有想法的人会极端富，想法至富。</p>
+            <p>为什么有这个转变？因为 AI 改变了做项目这件事本身。以前做一个项目，你需要懂技术、懂设计、懂运营，样样都得找人。现在一个人加上 AI，能做到以前一个团队才能做到的事。工具变了，方法也要跟着变。</p>
+            <p>所以今年的生财有术，整个产品结构都围绕“帮你用好 AI、找到方向、做出结果”来设计。</p>
+            <p><strong>如何用好 AI，跟上时代？四道坎，四个站。</strong>一个人从“不知道做什么”到“持续经营一门生意”，中间要跨四道坎。生财在每道坎上都做了事。</p>
+          </div>
+          <div class="source-page">
+            <h3>第一站：找到好方向</h3>
+            <p>迷茫是最大的成本。生财有三个东西帮你快速定位：</p>
+            <ul class="compact-list">
+              <li><strong>超级标：</strong>我看大量信息后对未来方向的判断和拆解，全年 30+ 条。上面讲的八大方向，每个都会有对应的超级标，结构化拆解到可执行。</li>
+              <li><strong>项目库：</strong>今年新推的产品，目前有 160+ 个经过验证的项目，分品类、分难度、分投入。</li>
+              <li><strong>精华帖：</strong>8 万多圈友真金白银跑出来的案例，是中文互联网上最真实的赚钱案例库之一。</li>
+            </ul>
+            <p>其他的还有超级术和月度金锚榜。每一个精华帖都是 AI 时代的 skill，只要武装上去，就能帮你增加赚钱的思维和技能。</p>
+          </div>
+          <div class="source-page">
+            <h3>第二站：学会 AI，带你做项目</h3>
+            <p>找到方向后，最怕“不知道怎么开始”。</p>
+            <ul class="compact-list">
+              <li><strong>AI 超级大航海：</strong>今年 5 月和 11 月各一次，一次性系统学 AI 编程、AI 视频、AI 自动化、AI 内容、AI Agent……相当于一套完整的 AI 入门课，在外面单独卖至少几千块。</li>
+              <li><strong>AI 项目航海：</strong>每 2-3 个月一次，每次 10-15 个选题。选一个具体方向，有教练、有手册、有同行者，带你 21 天完成一个小闭环。</li>
+            </ul>
+            <p>航海不收费，只收 99-199 元保证金，完成 21 天 12 次作业全额退还，退回率 90%。为什么不收钱？因为生财的核心资产是案例。案例来自圈友的行动，不是来自看内容。航海的目的是让你动起来。我们在这件事上不赚钱。</p>
+          </div>
+          <div class="source-page">
+            <h3>第三站：解决路上的卡点</h3>
+            <p>做项目一定会遇到困惑。</p>
+            <p>AI 亦仁是亦仁的数字分身，沉淀了我过去 9 年、150 万字对圈友提问的回答，专门针对草根创业场景。它跟普通 AI 最大的区别是：你的思路不对，它会直接告诉你，不会顺着你说。</p>
+            <p>想换项目？先问它，它不会轻易同意，因为我见过太多案例，大多数时候坚持比切换更有价值。</p>
+            <p>还有全年 100 场线下 AI 项目沙龙、超级 AI 大航海聚会，面对面认识高手、解决具体问题。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="pet">
+        <span class="section-kicker">案例 1</span>
+        <h2>Codex 宠物：不是玩具，是任务状态提示器</h2>
+        <p class="lead">做其他事情时，也能看到 Codex 是在运行、等确认，还是已经完成。</p>
+        <div class="grid-2">
+          <div class="panel">
+            <strong>适合长任务</strong>
+            <small>做页面、读资料、生成文档、跑自动化时，不用一直盯着主窗口。</small>
+          </div>
+          <div class="panel">
+            <strong>可以自定义</strong>
+            <small>用 hatch-pet 创建符合个人风格的桌面宠物。</small>
+          </div>
+        </div>
+
+        <h3>现场可复制给 Codex 的安装命令</h3>
+        <div class="copy-block">
+          <div class="copy-head"><span>安装 hatch-pet skill</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>$skill-installer hatch-pet</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>安装后创建自己的 Codex 宠物</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请帮我使用 $hatch-pet 创建一个适合我工作风格的 Codex 桌面宠物，要求：可爱、清爽、适合办公场景，能体现 AI 助手和任务进展提醒的感觉。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>如果技能没有出现</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请帮我刷新技能列表；如果需要重启 Codex，请告诉我下一步怎么操作。</code></pre>
+        </div>
+      </section>
+
+      <section id="browser">
+        <span class="section-kicker">案例 2</span>
+        <h2>浏览器操作：能做很多事，但不建议滥用</h2>
+        <p class="lead">适合做网页里的重复动作、导入导出、页面检查和资料整理。</p>
+        <div class="grid-3">
+          <div class="tool-card">
+            <strong>ProcessOn 流程图</strong>
+            <small>Codex 先生成可导入格式，再通过浏览器导入 ProcessOn，后续人工修改。</small>
+          </div>
+          <div class="tool-card">
+            <strong>公众号草稿同步</strong>
+            <small>通过浏览器或 Chrome 插件辅助同步内容到草稿箱。</small>
+          </div>
+          <div class="tool-card">
+            <strong>资料搜集</strong>
+            <small>打开网页、读取资料、提取要点、整理成文章素材。</small>
+          </div>
+        </div>
+        <div class="note warning">提醒：浏览器操作会消耗更多 token。小红书等平台容易触发风控，不建议频繁自动化操作。账号相关动作要谨慎。</div>
+
+        <h3>流程图导入 ProcessOn 的提示词</h3>
+        <div class="copy-block">
+          <div class="copy-head"><span>让 Codex 生成可导入流程图内容</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请根据下面的业务流程，帮我生成一份适合导入 ProcessOn 后继续编辑的流程图内容。要求：节点清晰、层级明确、包含判断分支，并告诉我推荐使用哪种导入格式。
+
+业务流程：
+【在这里粘贴你的流程】</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>让 Codex 用浏览器辅助导入</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请使用浏览器打开 ProcessOn，并把刚才生成的流程图内容导入进去。导入前先告诉我你准备采用的格式和步骤，遇到需要我登录或确认的地方先停下来。</code></pre>
+        </div>
+      </section>
+
+      <section id="lark">
+        <span class="section-kicker">案例 3</span>
+        <h2>飞书 CLI：让 Codex 调用飞书功能，而不是只靠飞书搜索</h2>
+        <p class="lead">飞书里教程和资料多，但原生检索不一定好。接入 CLI 后，Codex 可以帮你找、读、整理、迁移内容。</p>
+        <div class="grid-2">
+          <div class="panel">
+            <strong>适合做什么</strong>
+            <ul>
+              <li>搜索飞书里的资料和文档</li>
+              <li>读取文档并总结成 Markdown</li>
+              <li>把文章素材写入 Obsidian</li>
+              <li>联动发布 skill 做公众号草稿</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <strong>现场注意</strong>
+            <ul>
+              <li>先检查是否已安装，避免重复安装</li>
+              <li>用户身份登录时扫码后要等待完成</li>
+              <li>搜索文档可能需要额外权限</li>
+              <li>涉及公司资料时注意权限和隐私</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>飞书 CLI 现场可复制提示词</h3>
+        <div class="copy-block">
+          <div class="copy-head"><span>检查安装和状态</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请先检查我电脑里是否已经安装 lark-cli，不要重复安装。检查完成后运行 lark-cli doctor，告诉我当前飞书 CLI、用户身份、权限状态是否正常。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>登录飞书用户身份</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请帮我登录飞书 CLI 的用户身份。生成二维码或授权链接后停下来等我扫码，不要中途重启登录流程。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>读取飞书文档</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请使用飞书 CLI 读取这个飞书文档，并用 Markdown 格式总结核心内容、行动项和适合二次创作的素材：
+【这里粘贴飞书文档链接】</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>搜索飞书资料</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请用飞书 CLI 搜索我飞书里的相关资料，关键词是：【这里填关键词】。找到后帮我整理成：资料标题、链接、核心内容、可用于文章/小工具的要点。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>飞书内容进入 Obsidian 和发布流程</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请从飞书资料中提取适合写文章的内容，整理成 Obsidian Markdown 笔记格式，并放到我的内容库里。整理完成后，再告诉我是否适合进入公众号发布 skill 流程。</code></pre>
+        </div>
+      </section>
+
+      <section id="office">
+        <span class="section-kicker">案例 4</span>
+        <h2>办公场景：不是只有写代码的人能用</h2>
+        <div class="grid-4">
+          <div class="tool-card">
+            <strong>数据分析</strong>
+            <small>上传表格，生成结论、图表、异常点和汇报口径。</small>
+          </div>
+          <div class="tool-card">
+            <strong>周报撰写</strong>
+            <small>从任务记录、会议纪要、飞书文档中整理本周进展。</small>
+          </div>
+          <div class="tool-card">
+            <strong>活动策划案</strong>
+            <small>用网页端直接生成 Word 文档或策划方案初稿。</small>
+          </div>
+          <div class="tool-card">
+            <strong>自动出题</strong>
+            <small>把培训资料变成选择题、判断题、简答题和答案解析。</small>
+          </div>
+        </div>
+        <h3>周报提示词</h3>
+        <div class="copy-block">
+          <div class="copy-head"><span>从资料整理周报</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请根据我提供的本周资料，整理一份周报。格式包括：本周完成、关键进展、遇到的问题、下周计划、需要协同的事项。表达要清晰、适合发给团队负责人。
+
+资料：
+【粘贴任务记录、会议纪要或飞书内容】</code></pre>
+        </div>
+      </section>
+
+      <section id="web-desktop">
+        <span class="section-kicker">选择方法</span>
+        <h2>网页端和桌面版怎么选</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <strong>网页端适合</strong>
+            <ul>
+              <li>简单文档和活动策划案</li>
+              <li>不需要读取本地文件的内容生成</li>
+              <li>轻量 Word、表格、方案初稿</li>
+              <li>不需要浏览器自动化和本地命令的任务</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <strong>桌面 Codex 适合</strong>
+            <ul>
+              <li>读取和修改本地文件</li>
+              <li>跑命令、做小应用、预览页面</li>
+              <li>接插件、飞书 CLI、浏览器、Obsidian</li>
+              <li>需要把流程沉淀成 skill 或自动化</li>
+            </ul>
+          </div>
+        </div>
+        <div class="note">轻任务可以先用网页端，涉及本地文件、插件、浏览器、飞书 CLI 或小工具制作时，更适合用桌面 Codex。账号里的剩余用量以实际显示为准。</div>
+      </section>
+
+      <section id="tools">
+        <span class="section-kicker">小工具方向</span>
+        <h2>做出自己的 AI 小工具</h2>
+        <p class="lead">听懂 Codex 只是第一步，真正有价值的是把它用到自己的工作里。</p>
+        <div class="grid-3">
+          <div class="tool-card">
+            <strong>内容运营</strong>
+            <small>公众号标题生成器、发布检查清单、选题整理器。</small>
+          </div>
+          <div class="tool-card">
+            <strong>教学培训</strong>
+            <small>自动出题工具、签到统计工具、课程反馈分析器。</small>
+          </div>
+          <div class="tool-card">
+            <strong>设计物料</strong>
+            <small>海报文案排版器、封面检查器、图片批量命名器。</small>
+          </div>
+          <div class="tool-card">
+            <strong>数据分析</strong>
+            <small>上传表格后自动生成图表、结论和汇报口径。</small>
+          </div>
+          <div class="tool-card">
+            <strong>日常办公</strong>
+            <small>周报生成器、会议纪要整理器、待办拆解器。</small>
+          </div>
+          <div class="tool-card">
+            <strong>活动策划</strong>
+            <small>活动方案生成器、预算表生成器、物料清单工具。</small>
+          </div>
+          <div class="tool-card">
+            <strong>生活学习</strong>
+            <small>孩子学单词小游戏、家庭预算表、旅行计划助手。</small>
+          </div>
+          <div class="tool-card">
+            <strong>个人成长</strong>
+            <small>阅读打卡器、习惯追踪器、运动饮食记录工具。</small>
+          </div>
+        </div>
+      </section>
+
+      <section id="workshop">
+        <span class="section-kicker">集中实操</span>
+        <h2>现场做小工具：统一流程，题目自己选</h2>
+        <p class="lead">目标不是做得多复杂，而是完成一个闭环。</p>
+        <div class="demo-path" aria-label="小工具制作闭环">
+          <span>想到一个工作问题</span>
+          <span>让 Codex 拆需求</span>
+          <span>生成 HTML 工具</span>
+          <span>现场预览修改</span>
+          <span>保存继续使用</span>
+        </div>
+
+        <h3>先从一个很小的点开始</h3>
+        <p>不用一上来做复杂系统。可以从工作里重复的小动作、生活里想偷懒的小需求、孩子学习里的小游戏开始。</p>
+        <div class="pill-list">
+          <span class="pill">孩子学单词小游戏</span>
+          <span class="pill">自动出题工具</span>
+          <span class="pill">周报生成器</span>
+          <span class="pill">数据图表看板</span>
+          <span class="pill">活动物料清单</span>
+          <span class="pill">旅行计划助手</span>
+          <span class="pill">家庭预算表</span>
+          <span class="pill">阅读打卡器</span>
+        </div>
+
+        <h3>现场可复制给 Codex 的小工具提示词</h3>
+        <div class="copy-block">
+          <div class="copy-head"><span>通用小工具开工提示词</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>我想做一个工作中能直接用的小工具。请先不要写代码，先问我 3-5 个关键问题，帮我明确使用场景、输入内容、输出结果、需要的按钮和页面布局。确认后再帮我做成一个可以直接打开的 HTML 文件。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>孩子学单词小游戏示例</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请帮我做一个孩子学单词的 HTML 小游戏。功能包括：展示英文单词、展示 4 个中文选项、答对加分、答错显示正确答案、最后显示得分。界面要可爱、清爽、适合小学生使用。请先做一个单文件 HTML 版本，方便我直接打开测试。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>自动出题工具示例</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请帮我做一个自动出题 HTML 小工具。用户可以粘贴一段学习资料，选择题型和题目数量，工具自动生成选择题、判断题和答案解析。先做前端交互原型，题目生成逻辑可以用示例数据模拟。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>数据图表小工具示例</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>请帮我做一个数据分析小工具。用户可以粘贴表格数据，工具自动识别字段，生成一个简洁的数据概览、关键结论和 2-3 个适合展示的图表。先做成单文件 HTML，使用浏览器即可打开。</code></pre>
+        </div>
+        <div class="copy-block">
+          <div class="copy-head"><span>让 Codex 根据预览继续优化</span><button class="copy-button" data-copy>复制</button></div>
+          <pre><code>我已经打开预览了。请根据当前页面继续优化：让按钮更清晰、文字更易懂、移动端也能正常使用，并检查导出功能是否可用。</code></pre>
+        </div>
+      </section>
+
+      <section id="wrap">
+        <span class="section-kicker">收尾</span>
+        <h2>把 Codex 从聊天工具，变成工作搭子</h2>
+        <div class="grid-3">
+          <div class="step">
+            <strong>今天带走一个认知</strong>
+            <small>Codex 可以进入你的真实工作流，不只是回答问题。</small>
+          </div>
+          <div class="step">
+            <strong>今天带走一套方法</strong>
+            <small>给资料、拆需求、生成工具、预览修改、沉淀复用。</small>
+          </div>
+          <div class="step">
+            <strong>今天带走一个成果</strong>
+            <small>每个人至少做出一个自己的 AI 工作小工具。</small>
+          </div>
+        </div>
+        <h3>最后一句话</h3>
+        <p class="lead">不要等完全学会 Codex 才开始用。先从一个真实的小麻烦开始，让它帮你做出第一个工具。</p>
+      </section>
+
+      <p class="footer">Codex 线下 AI 实战分享 HTML 版。左侧目录可快速跳转，命令块支持一键复制。</p>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const block = button.closest(".copy-block");
+        const text = block.querySelector("code").innerText;
+        try {
+          await navigator.clipboard.writeText(text);
+          const oldText = button.innerText;
+          button.innerText = "已复制";
+          setTimeout(() => {
+            button.innerText = oldText;
+          }, 1400);
+        } catch (error) {
+          button.innerText = "复制失败";
+          setTimeout(() => {
+            button.innerText = "复制";
+          }, 1400);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
