@@ -189,6 +189,39 @@
       box-shadow: 4px 4px 0 var(--deep);
     }
 
+    .hero-topline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .scy-mark {
+      display: inline-grid;
+      gap: 2px;
+      min-width: 178px;
+      padding: 8px 14px;
+      border: 2px solid var(--deep);
+      border-radius: 6px;
+      background: var(--deep);
+      color: #eafff8;
+      box-shadow: 4px 4px 0 rgba(7, 82, 71, 0.28);
+    }
+
+    .scy-mark strong {
+      font-size: 20px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .scy-mark small {
+      color: var(--mint);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
     .hero h1 {
       margin: 22px 0 14px;
       font-size: clamp(44px, 7vw, 86px);
@@ -629,7 +662,10 @@
       <section id="home" class="hero">
         <div class="hero-grid">
           <div>
-            <span class="tag">Codex 开工</span>
+            <div class="hero-topline">
+              <span class="scy-mark"><strong>生财有术</strong><small>AI 时代的创业者社群</small></span>
+              <span class="tag">Codex 开工</span>
+            </div>
             <h1><span class="accent">3小时</span>，用 Codex 做出你的第一个 AI 工作小工具</h1>
             <p>从宠物、浏览器、飞书资料库，到每个人现场做出一个能用的小工具。</p>
             <div class="meta-strip">
